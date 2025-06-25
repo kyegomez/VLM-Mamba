@@ -1,4 +1,4 @@
-# VLM-Mamba: The First State Space Model-Based Vision-Language Model
+# VLM-Mamba: The First State Space Model-Based Vision-Language Model [WIP]
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
@@ -170,7 +170,7 @@ model = VLMamba(config)
 
 *Note: Parameter counts vary based on configuration. LoRA adds minimal trainable parameters.*
 
-## Experimental Results
+## Theoritical Results
 
 ### Performance Comparison
 - **Memory Usage**: 40% reduction compared to equivalent Transformer-based VLM
@@ -232,8 +232,8 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 ## Contact
 
 - **Author**: Kye Gomez
-- **Email**: kye@apac.ai
 - **GitHub**: [@kyegomez](https://github.com/kyegomez)
+- 
 
 ---
 
