@@ -1,9 +1,13 @@
 import torch
-from vlm_mamba import VLMamba, VLMambaConfig, LoRAConfig, LanguageConfig, BridgerConfig, VisionConfig
+from vlm_mamba import (
+    VLMamba,
+    VLMambaConfig,
+    LoRAConfig,
+    LanguageConfig,
+    BridgerConfig,
+    VisionConfig,
+)
 from loguru import logger
-
-
-
 
 # --- Example Usage ---
 if __name__ == "__main__":
@@ -24,21 +28,22 @@ if __name__ == "__main__":
         d_model=model_dim,
         n_layers=n_layers,
     )
-    bridger_cfg = BridgerConfig(
-        d_model=model_dim, 
-        expansion_factor=4
-    )
+    bridger_cfg = BridgerConfig(d_model=model_dim, expansion_factor=4)
 
     # --- Dummy Data ---
     batch_size = 2
     dummy_image = torch.randn(
         batch_size, 3, vision_cfg.img_size, vision_cfg.img_size
     )
-    dummy_text = torch.randint(0, language_cfg.vocab_size, (batch_size, 64))
+    dummy_text = torch.randint(
+        0, language_cfg.vocab_size, (batch_size, 64)
+    )
 
     # --- Example 1: Standard VLMamba with Encoder ---
     logger.info("-" * 50)
-    logger.info("Example 1: Standard VLMamba with VisionMamba encoder")
+    logger.info(
+        "Example 1: Standard VLMamba with VisionMamba encoder"
+    )
     config_encoder = VLMambaConfig(
         vision=vision_cfg,
         language=language_cfg,
@@ -48,7 +53,9 @@ if __name__ == "__main__":
     model_encoder = VLMamba(config_encoder)
     with torch.no_grad():
         output_logits = model_encoder(dummy_image, dummy_text)
-    logger.success(f"Encoder model output shape: {output_logits.shape}")
+    logger.success(
+        f"Encoder model output shape: {output_logits.shape}"
+    )
 
     # --- Example 2: VLMamba with Fuyu-style Processor ---
     logger.info("-" * 50)
@@ -62,11 +69,15 @@ if __name__ == "__main__":
     model_fuyu = VLMamba(config_fuyu)
     with torch.no_grad():
         output_logits_fuyu = model_fuyu(dummy_image, dummy_text)
-    logger.success(f"Fuyu-style model output shape: {output_logits_fuyu.shape}")
+    logger.success(
+        f"Fuyu-style model output shape: {output_logits_fuyu.shape}"
+    )
 
     # --- Example 3: VLMamba with LoRA enabled ---
     logger.info("-" * 50)
-    logger.info("Example 3: VLMamba with LoRA for efficient fine-tuning")
+    logger.info(
+        "Example 3: VLMamba with LoRA for efficient fine-tuning"
+    )
     lora_cfg = LoRAConfig(rank=8, alpha=16)
     config_lora = VLMambaConfig(
         vision=vision_cfg,
@@ -83,11 +94,15 @@ if __name__ == "__main__":
     )
 
     logger.info(f"Total parameters: {total_params / 1e6:.2f}M")
-    logger.info(f"Trainable (LoRA) parameters: {trainable_params / 1e3:.2f}K")
+    logger.info(
+        f"Trainable (LoRA) parameters: {trainable_params / 1e3:.2f}K"
+    )
     logger.info(
         f"Trainable percentage: {100 * trainable_params / total_params:.4f}%"
     )
 
     with torch.no_grad():
         output_logits_lora = model_lora(dummy_image, dummy_text)
-    logger.success(f"LoRA model output shape: {output_logits_lora.shape}")
+    logger.success(
+        f"LoRA model output shape: {output_logits_lora.shape}"
+    )

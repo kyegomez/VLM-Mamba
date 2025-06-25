@@ -28,7 +28,7 @@ __email__ = "kye@apac.ai"
 
 __all__ = [
     "VLMamba",
-    "VLMambaConfig", 
+    "VLMambaConfig",
     "VisionConfig",
     "LanguageConfig",
     "BridgerConfig",

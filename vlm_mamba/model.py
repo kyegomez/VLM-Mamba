@@ -40,104 +40,148 @@ except ImportError:
 
 class VisionConfig(BaseModel):
     """Configuration for the vision processing component."""
-    
-    img_size: int = Field(default=224, description="Size of input images (height and width)")
-    patch_size: int = Field(default=16, description="Size of each square patch")
-    in_chans: int = Field(default=3, description="Number of input image channels")
-    d_model: int = Field(default=768, description="Model dimensionality")
-    n_layers: int = Field(default=12, description="Number of layers in the vision encoder")
-    
-    @validator('img_size')
+
+    img_size: int = Field(
+        default=224,
+        description="Size of input images (height and width)",
+    )
+    patch_size: int = Field(
+        default=16, description="Size of each square patch"
+    )
+    in_chans: int = Field(
+        default=3, description="Number of input image channels"
+    )
+    d_model: int = Field(
+        default=768, description="Model dimensionality"
+    )
+    n_layers: int = Field(
+        default=12,
+        description="Number of layers in the vision encoder",
+    )
+
+    @validator("img_size")
     def validate_img_size(cls, v):
         if v <= 0 or v % 16 != 0:
-            raise ValueError('img_size must be positive and divisible by 16')
+            raise ValueError(
+                "img_size must be positive and divisible by 16"
+            )
         return v
-    
-    @validator('patch_size')
+
+    @validator("patch_size")
     def validate_patch_size(cls, v):
         if v <= 0 or v > 32:
-            raise ValueError('patch_size must be positive and <= 32')
+            raise ValueError("patch_size must be positive and <= 32")
         return v
-    
-    @validator('d_model')
+
+    @validator("d_model")
     def validate_d_model(cls, v):
         if v <= 0 or v % 64 != 0:
-            raise ValueError('d_model must be positive and divisible by 64')
+            raise ValueError(
+                "d_model must be positive and divisible by 64"
+            )
         return v
 
 
 class LanguageConfig(BaseModel):
     """Configuration for the language model component."""
-    
-    vocab_size: int = Field(default=50257, description="Size of the vocabulary")
-    d_model: int = Field(default=768, description="Model dimensionality")
-    n_layers: int = Field(default=12, description="Number of layers in the language model")
-    
-    @validator('vocab_size')
+
+    vocab_size: int = Field(
+        default=50257, description="Size of the vocabulary"
+    )
+    d_model: int = Field(
+        default=768, description="Model dimensionality"
+    )
+    n_layers: int = Field(
+        default=12,
+        description="Number of layers in the language model",
+    )
+
+    @validator("vocab_size")
     def validate_vocab_size(cls, v):
         if v <= 0:
-            raise ValueError('vocab_size must be positive')
+            raise ValueError("vocab_size must be positive")
         return v
-    
-    @validator('d_model')
+
+    @validator("d_model")
     def validate_d_model(cls, v):
         if v <= 0 or v % 64 != 0:
-            raise ValueError('d_model must be positive and divisible by 64')
+            raise ValueError(
+                "d_model must be positive and divisible by 64"
+            )
         return v
 
 
 class BridgerConfig(BaseModel):
     """Configuration for the vision-language bridge component."""
-    
-    d_model: int = Field(default=768, description="Model dimensionality")
-    expansion_factor: int = Field(default=4, description="Expansion factor for the FFN")
-    
-    @validator('d_model')
+
+    d_model: int = Field(
+        default=768, description="Model dimensionality"
+    )
+    expansion_factor: int = Field(
+        default=4, description="Expansion factor for the FFN"
+    )
+
+    @validator("d_model")
     def validate_d_model(cls, v):
         if v <= 0 or v % 64 != 0:
-            raise ValueError('d_model must be positive and divisible by 64')
+            raise ValueError(
+                "d_model must be positive and divisible by 64"
+            )
         return v
-    
-    @validator('expansion_factor')
+
+    @validator("expansion_factor")
     def validate_expansion_factor(cls, v):
         if v <= 0 or v > 8:
-            raise ValueError('expansion_factor must be positive and <= 8')
+            raise ValueError(
+                "expansion_factor must be positive and <= 8"
+            )
         return v
 
 
 class LoRAConfig(BaseModel):
     """Configuration for LoRA (Low-Rank Adaptation)."""
-    
-    rank: int = Field(description="Rank of the low-rank adaptation matrices")
-    alpha: float = Field(description="Scaling factor for the LoRA update")
-    
-    @validator('rank')
+
+    rank: int = Field(
+        description="Rank of the low-rank adaptation matrices"
+    )
+    alpha: float = Field(
+        description="Scaling factor for the LoRA update"
+    )
+
+    @validator("rank")
     def validate_rank(cls, v):
         if v <= 0 or v > 256:
-            raise ValueError('rank must be positive and <= 256')
+            raise ValueError("rank must be positive and <= 256")
         return v
-    
-    @validator('alpha')
+
+    @validator("alpha")
     def validate_alpha(cls, v):
         if v <= 0:
-            raise ValueError('alpha must be positive')
+            raise ValueError("alpha must be positive")
         return v
 
 
 class VLMambaConfig(BaseModel):
     """Complete configuration for the VLMamba model."""
-    
-    vision: VisionConfig = Field(description="Vision processing configuration")
-    language: LanguageConfig = Field(description="Language model configuration")
-    bridger: BridgerConfig = Field(description="Bridge component configuration")
+
+    vision: VisionConfig = Field(
+        description="Vision processing configuration"
+    )
+    language: LanguageConfig = Field(
+        description="Language model configuration"
+    )
+    bridger: BridgerConfig = Field(
+        description="Bridge component configuration"
+    )
     vision_mode: Literal["encoder", "fuyu"] = Field(
-        default="encoder", 
-        description="Vision processing mode: 'encoder' for VisionMamba, 'fuyu' for lightweight processor"
+        default="encoder",
+        description="Vision processing mode: 'encoder' for VisionMamba, 'fuyu' for lightweight processor",
     )
     lora: Optional[LoRAConfig] = Field(
-        default=None, 
-        description="LoRA configuration for efficient fine-tuning"
+        default=None,
+        description="LoRA configuration for efficient fine-tuning",
     )
+
 
 # --- LoRA Implementation ---
 
@@ -163,12 +207,18 @@ class LoRALinear(nn.Module):
         super().__init__()
         self.linear = linear_layer
 
-        self.lora_down = nn.Linear(self.linear.in_features, rank, bias=False)
-        self.lora_up = nn.Linear(rank, self.linear.out_features, bias=False)
+        self.lora_down = nn.Linear(
+            self.linear.in_features, rank, bias=False
+        )
+        self.lora_up = nn.Linear(
+            rank, self.linear.out_features, bias=False
+        )
         self.scaling = alpha / rank
 
         # Initialize LoRA matrices
-        nn.init.kaiming_uniform_(self.lora_down.weight, a=math.sqrt(5))
+        nn.init.kaiming_uniform_(
+            self.lora_down.weight, a=math.sqrt(5)
+        )
         nn.init.zeros_(self.lora_up.weight)
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
@@ -212,7 +262,9 @@ class FuyuImageProcessor(nn.Module):
         patch_dim = in_chans * patch_size * patch_size
 
         self.projection = nn.Linear(patch_dim, d_model)
-        self.pos_embed = nn.Parameter(torch.randn(1, self.num_patches, d_model))
+        self.pos_embed = nn.Parameter(
+            torch.randn(1, self.num_patches, d_model)
+        )
         logger.info("Initialized Fuyu-style Image Processor.")
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
@@ -227,7 +279,9 @@ class FuyuImageProcessor(nn.Module):
         """
         p = self.patch_size
         # Use einops to rearrange the image into a sequence of patches
-        patches = rearrange(x, "b c (h p1) (w p2) -> b (h w) (p1 p2 c)", p1=p, p2=p)
+        patches = rearrange(
+            x, "b c (h p1) (w p2) -> b (h w) (p1 p2 c)", p1=p, p2=p
+        )
 
         projected_patches = self.projection(patches)
         projected_patches += self.pos_embed
@@ -257,12 +311,21 @@ class VisionMamba(nn.Module):
         self.num_patches = (img_size // patch_size) ** 2
 
         self.patch_embed = nn.Conv2d(
-            in_chans, d_model, kernel_size=patch_size, stride=patch_size
+            in_chans,
+            d_model,
+            kernel_size=patch_size,
+            stride=patch_size,
         )
-        self.pos_embed = nn.Parameter(torch.randn(1, self.num_patches, d_model))
-        self.layers = nn.ModuleList([Mamba(d_model=d_model) for _ in range(n_layers)])
+        self.pos_embed = nn.Parameter(
+            torch.randn(1, self.num_patches, d_model)
+        )
+        self.layers = nn.ModuleList(
+            [Mamba(d_model=d_model) for _ in range(n_layers)]
+        )
         self.norm = nn.LayerNorm(d_model)
-        logger.info(f"Initialized VisionMamba Encoder with {n_layers} layers.")
+        logger.info(
+            f"Initialized VisionMamba Encoder with {n_layers} layers."
+        )
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         B, C, H, W = x.shape
@@ -304,18 +367,27 @@ class LanguageMamba(nn.Module):
     The Language Model component, using Mamba.
     """
 
-    def __init__(self, vocab_size: int = 50257, d_model: int = 768, n_layers: int = 12):
+    def __init__(
+        self,
+        vocab_size: int = 50257,
+        d_model: int = 768,
+        n_layers: int = 12,
+    ):
         super().__init__()
         if Mamba is None:
             raise RuntimeError("Mamba SSM package is required.")
 
         self.d_model = d_model
         self.embedding = nn.Embedding(vocab_size, d_model)
-        self.layers = nn.ModuleList([Mamba(d_model=d_model) for _ in range(n_layers)])
+        self.layers = nn.ModuleList(
+            [Mamba(d_model=d_model) for _ in range(n_layers)]
+        )
         self.norm = nn.LayerNorm(d_model)
         self.lm_head = nn.Linear(d_model, vocab_size, bias=False)
         self.lm_head.weight = self.embedding.weight
-        logger.info(f"Initialized LanguageMamba with {n_layers} layers.")
+        logger.info(
+            f"Initialized LanguageMamba with {n_layers} layers."
+        )
 
     def forward(self, input_ids: torch.Tensor) -> torch.Tensor:
         x = self.embedding(input_ids) * (self.d_model**0.5)
@@ -342,17 +414,22 @@ class VLMamba(nn.Module):
         super().__init__()
 
         if config.vision_mode == "encoder":
-            self.vision_processor = VisionMamba(**config.vision.dict())
+            self.vision_processor = VisionMamba(
+                **config.vision.dict()
+            )
         elif config.vision_mode == "fuyu":
             # Fuyu mode needs d_model, patch_size, img_size from vision_config
             fuyu_cfg = {
                 k: v
                 for k, v in config.vision.dict().items()
-                if k in ["d_model", "patch_size", "img_size", "in_chans"]
+                if k
+                in ["d_model", "patch_size", "img_size", "in_chans"]
             }
             self.vision_processor = FuyuImageProcessor(**fuyu_cfg)
         else:
-            raise ValueError(f"Unknown vision_mode: {config.vision_mode}")
+            raise ValueError(
+                f"Unknown vision_mode: {config.vision_mode}"
+            )
 
         self.bridger = BridgerFFN(**config.bridger.dict())
         self.language_model = LanguageMamba(**config.language.dict())
@@ -372,9 +449,13 @@ class VLMamba(nn.Module):
             # Target the 'in_proj' and 'x_proj' layers within Mamba blocks
             if isinstance(module, Mamba):
                 logger.debug(f"Applying LoRA to Mamba block: {name}")
-                module.in_proj = LoRALinear(module.in_proj, rank, alpha)
+                module.in_proj = LoRALinear(
+                    module.in_proj, rank, alpha
+                )
 
-        logger.success(f"Successfully applied LoRA with rank={rank} and alpha={alpha}.")
+        logger.success(
+            f"Successfully applied LoRA with rank={rank} and alpha={alpha}."
+        )
 
     def freeze_non_lora_params(self):
         """
@@ -383,9 +464,13 @@ class VLMamba(nn.Module):
         for name, param in self.named_parameters():
             if "lora_" not in name:
                 param.requires_grad = False
-        logger.info("Froze all non-LoRA parameters for efficient fine-tuning.")
+        logger.info(
+            "Froze all non-LoRA parameters for efficient fine-tuning."
+        )
 
-    def forward(self, image: torch.Tensor, text_tokens: torch.Tensor) -> torch.Tensor:
+    def forward(
+        self, image: torch.Tensor, text_tokens: torch.Tensor
+    ) -> torch.Tensor:
         """
         The main forward pass for the VLM.
         """
@@ -393,7 +478,9 @@ class VLMamba(nn.Module):
         bridged_vision_features = self.bridger(vision_features)
         text_features = self.language_model.embedding(text_tokens)
 
-        combined_features = torch.cat([bridged_vision_features, text_features], dim=1)
+        combined_features = torch.cat(
+            [bridged_vision_features, text_features], dim=1
+        )
 
         x = combined_features
         for layer in self.language_model.layers:
@@ -426,7 +513,7 @@ class VLMamba(nn.Module):
 #             n_layers=n_layers,
 #         )
 #         bridger_cfg = BridgerConfig(
-#             d_model=model_dim, 
+#             d_model=model_dim,
 #             expansion_factor=4
 #         )
 
