@@ -36,7 +36,7 @@ pydantic = "^2.0.0"
 mamba-ssm = "^1.0.0"
 
 [tool.poetry.dev-dependencies]
-pytest = "^7.0.0"
+pytest = "^8.4.2"
 pytest-cov = "^4.0.0"
 black = "^23.0.0"
 ruff = "^0.1.0"
