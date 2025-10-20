@@ -33,7 +33,7 @@ torchvision = "^0.15.0"
 loguru = "^0.7.0"
 einops = "^0.7.0"
 pydantic = "^2.0.0"
-mamba-ssm = "^1.0.0"
+mamba-ssm = "^2.2.6"
 
 [tool.poetry.dev-dependencies]
 pytest = "^7.0.0"
